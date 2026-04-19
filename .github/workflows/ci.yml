@@ -25,4 +25,4 @@ jobs:
 
     - name: Run Python script
       run: |
-        python E:\AI course P\File-Merger-Agent\File-Merger-Agent
+        python "File-Merger-Agent/app.py"
