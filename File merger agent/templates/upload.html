@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Word Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px;
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+        .upload-area i {
+            font-size: 60px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .upload-area h3 {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .upload-area p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+        .file-list {
+            margin-top: 30px;
+            display: none;
+        }
+        .file-list h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .file-items {
+            list-style: none;
+        }
+        .file-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-name {
+            color: #333;
+            font-weight: 500;
+        }
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .convert-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            transition: transform 0.3s ease;
+        }
+        .convert-btn:hover {
+            transform: translateY(-2px);
+        }
+        .convert-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            display: block;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .nav-links {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 500;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 PDF to Word Converter</h1>
+            <p>Upload PDFs, get a merged Word document with SQLite storage</p>
+        </div>
+        
+        <div class="content">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="upload-area" id="uploadArea">
+                    <i>📁</i>
+                    <h3>Drag & Drop PDF Files Here</h3>
+                    <p>or click to browse</p>
+                    <input type="file" class="file-input" id="fileInput" name="files" multiple accept=".pdf" hidden>
+                    <button type="button" class="upload-btn" id="browseBtn">Browse Files</button>
+                </div>
+                
+                <div class="file-list" id="fileList">
+                    <h3>Selected Files:</h3>
+                    <ul class="file-items" id="fileItems"></ul>
+                </div>
+                
+                <button type="submit" class="convert-btn" id="convertBtn" disabled>Convert to Word Document</button>
+            </form>
+            
+            <div class="status" id="status"></div>
+            <div class="loading" id="loading"></div>
+            
+            <div class="nav-links">
+                <a href="/database-view">📊 View Database</a> | 
+                <a href="/export-database">📥 Export Database</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const fileList = document.getElementById('fileList');
+        const fileItems = document.getElementById('fileItems');
+        const convertBtn = document.getElementById('convertBtn');
+        const status = document.getElementById('status');
+        const loading = document.getElementById('loading');
+        
+        let selectedFiles = [];
+        
+        // Browse button click
+        browseBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // Drag and drop events
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#764ba2';
+            uploadArea.style.background = '#f0f2ff';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = '#f8f9ff';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = '#f8f9ff';
+            
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+            handleFiles(files);
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            selectedFiles = files;
+            displayFileList(files);
+            convertBtn.disabled = false;
+        }
+        
+        function displayFileList(files) {
+            fileItems.innerHTML = '';
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                li.innerHTML = `
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${(file.size / 1024).toFixed(2)} KB</span>
+                `;
+                fileItems.appendChild(li);
+            });
+            fileList.style.display = 'block';
+        }
+        
+        // Form submission
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (selectedFiles.length === 0) return;
+            
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+            
+            // Show loading
+            convertBtn.disabled = true;
+            loading.style.display = 'block';
+            status.className = 'status info';
+            status.textContent = 'Converting files... Please wait.';
+            status.style.display = 'block';
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    // Get the blob from response
+                    const blob = await response.blob();
+                    
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'merged_books.docx';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    // Show success message
+                    status.className = 'status success';
+                    status.textContent = '✅ Conversion successful! Word document downloaded.';
+                } else {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ Error: ' + error.message;
+            } finally {
+                loading.style.display = 'none';
+                convertBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
