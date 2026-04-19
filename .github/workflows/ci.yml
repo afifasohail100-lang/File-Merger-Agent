@@ -23,6 +23,6 @@ jobs:
       run: |
         pip install -r requirements.txt || echo "No requirements file"
 
-    - name: Test pipeline
+    - name: Run Python script
       run: |
-         echo "CI/CD is working!"
+        python File Merger Agent/app.py 
