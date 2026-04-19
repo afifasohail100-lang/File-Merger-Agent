@@ -2,3 +2,4 @@ flask
 PyMuPDF
 numpy
 pandas
+python-docx
